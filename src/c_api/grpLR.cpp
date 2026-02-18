@@ -48,9 +48,8 @@ extern "C" void grpLR(double *A, double *y, double *lambda, int *nnlambda, doubl
 
   ActNewtonSolver solver(obj, *param);
 
-  vector<vector<VectorXd> > beta_history;
-  double *sse = new double[nlambda];
-  solver.solve(sse, df);
+  vector<double> sse(nlambda, 0.0);
+  solver.solve(sse.data(), df);
 
   assert(solver.solution_path.size() == (unsigned int)nlambda);
   for (int i = 0; i < nlambda; i++) {

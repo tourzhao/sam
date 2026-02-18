@@ -1,9 +1,29 @@
 Package: SAM
 Type: Package
 Title: Sparse Additive Modelling
-Version: 1.1.3
-Author: Haoming Jiang, Yukun Ma, Han Liu, Kathryn Roeder, Xingguo Li, and Tuo Zhao
-Maintainer: Haoming Jiang <jianghm.ustc@gmail.com>
+Version: 1.2
+Authors@R: c(
+    person(given = "Haoming",
+           family = "Jiang",
+           role = "aut",
+           email = "jianghm.ustc@gmail.com"),
+    person(given = "Yukun",
+           family = "Ma",
+           role = "aut"),
+    person(given = "Han",
+           family = "Liu",
+           role = "aut"),
+    person(given = "Kathryn",
+           family = "Roeder",
+           role = "aut"),
+    person(given = "Xingguo",
+           family = "Li",
+           role = "aut"),
+    person(given = "Tuo",
+           family = "Zhao",
+           role = c("aut", "cre"),
+           email = "tourzhao@gatech.edu"))
+Maintainer: Tuo Zhao <tourzhao@gatech.edu>
 Depends: R (>= 2.14), splines
 Description: Computationally efficient tools for high dimensional predictive
         modeling (regression and classification). SAM is short for sparse 
@@ -16,8 +36,6 @@ License: GPL-2
 Repository: CRAN
 NeedsCompilation: yes
 RoxygenNote: 7.1.1
-LinkingTo: 
-    Rcpp,
-    RcppEigen
-Imports: 
-    Rcpp
+LinkingTo: Rcpp, RcppEigen
+Packaged: 2021-06-30 17:15:07 UTC; jhaoming
+Date/Publication: 2021-07-01 07:10:27 UTC

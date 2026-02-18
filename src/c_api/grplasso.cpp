@@ -6,6 +6,7 @@
 #include "R_ext/BLAS.h"
 #include "R_ext/Lapack.h"
 #include <vector>
+#include <algorithm>
 #include <Rcpp.h>
 #include <RcppEigen.h>
 #include "../utils.h"
@@ -41,6 +42,7 @@ extern "C" void grplasso(double *yy, double *XX, double *lambda, int *nnlambda, 
 
   vector<MatrixXd> V(d);
   VectorXd y(n);
+  const double svd_tol = 1e-12;
 
   for (int i = 0; i < n; i++)
     y(i) = yy[i];
@@ -66,7 +68,7 @@ extern "C" void grplasso(double *yy, double *XX, double *lambda, int *nnlambda, 
     V[i] = svd.matrixV();
     for (int j = 0; j < p; j++)
       for (int k = 0; k < p; k++)
-        V[i](j,k) /= S[k];
+        V[i](j,k) /= std::max(S[k], svd_tol);
 
     for (int j = 0; j < n; j++) {
       for (int k = 0; k < p; k++) {
@@ -103,10 +105,7 @@ extern "C" void grplasso(double *yy, double *XX, double *lambda, int *nnlambda, 
 
   ActNewtonSolver solver(obj, *param);
 
-  vector<vector<VectorXd> > beta_history;
   solver.solve(sse, df);
-
-  assert(beta_history.size() == (unsigned int)nlambda);
 
   //update funcnorm, sse, ww, df
   vector<VectorXd> cur_beta(d, VectorXd::Zero(p));

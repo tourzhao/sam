@@ -78,54 +78,45 @@
 #'
 #' ## predicting response
 #' out.tst = predict(out.trn,Xt)
-#' @useDynLib SAM grpLR
 #' @export
 samLL = function(X, y, p=3, lambda = NULL, nlambda = NULL, lambda.min.ratio = 0.1, thol=1e-5, max.ite = 1e5, regfunc="L1"){
 
-  gcinfo(FALSE)
-  fit = list()
-  fit$p = p
-
-  fit = list()
-
-  X = as.matrix(X)
-  y = as.vector(y)
-
-  n = nrow(X)
-  d = ncol(X)
-  m = d*p
+  p = .sam_validate_p(p)
+  checked = .sam_validate_xy(X, y, "samLL")
+  X = checked$X
+  y = checked$y
+  n = checked$n
+  d = checked$d
+  m = d * p
 
   n1 = sum(y==1)
   n0 = sum(y==0)
 
+  if (n1 == 0 || n0 == 0) {
+    stop("Please provide both 0 and 1 labels.", call. = FALSE)
+  }
+
   if((n1+n0)!=n){
-    cat("Please check the labels. (Must be coded in 1 and 0)")
-    fit = "Please check the labels."
-    return(fit)
+    stop("Please check the labels. (Must be coded in 1 and 0)", call. = FALSE)
   }
 
-  fit$p = p
-
-  X.min = apply(X,2,min)
-  X.max = apply(X,2,max)
-  X.ran = X.max - X.min
-  X.min.rep = matrix(rep(X.min,n),nrow=n,byrow=T)
-  X.ran.rep = matrix(rep(X.ran,n),nrow=n,byrow=T)
-  X = (X-X.min.rep)/X.ran.rep
-
-  fit$X.min = X.min
-  fit$X.ran = X.ran
-
-  Z = matrix(0,n,m)
-  fit$nkots = matrix(0,p-1,d)
-  fit$Boundary.knots = matrix(0,2,d)
-  for(j in 1:d){
-    tmp = (j-1)*p + c(1:p)
-    tmp0 = ns(X[,j],df=p)
-    Z[,tmp] = tmp0
-    fit$nkots[,j] = attr(tmp0,'knots')
-    fit$Boundary.knots[,j] = attr(tmp0,'Boundary.knots')
+  lambda.info = .sam_validate_lambda(lambda, nlambda, lambda.min.ratio, default_nlambda = 20)
+  if (lambda.info$supplied) {
+    lambda = lambda.info$lambda
+    nlambda = lambda.info$nlambda
+  } else {
+    nlambda = lambda.info$nlambda
   }
+
+  scaled = .sam_scale_training(X)
+  X = scaled$X
+  fit = list(p = p, X.min = scaled$X.min, X.ran = scaled$X.ran)
+
+  basis = .sam_build_basis(X, p)
+  Z = basis$Z
+  fit$knots = basis$knots
+  fit$nkots = basis$knots
+  fit$Boundary.knots = basis$Boundary.knots
 
   L0 = norm(Z,"f")^2
 
@@ -138,23 +129,19 @@ samLL = function(X, y, p=3, lambda = NULL, nlambda = NULL, lambda.min.ratio = 0.
 
   z = colSums(matrix(rep(y,m+1),n,m+1)*Z)
 
-  if(is.null(lambda)){
+  if(!lambda.info$supplied){
     g = -z + colSums(matrix(rep(n1/n,m+1),n,m+1)*Z)
-
-    if(is.null(nlambda)) nlambda = 20;
 
     lambda_max=max(sqrt(colSums(matrix(g[1:(p*d)],p,d)^2)))
     lambda = exp(seq(log(1),log(lambda.min.ratio),length=nlambda))*lambda_max
-  } else nlambda = length(lambda)
+  }
 
-  out = .C("grpLR", A = as.double(Z), y = as.double(y), lambda = as.double(lambda), nlambda = as.integer(nlambda), LL0 = as.double(L0), nn = as.integer(n), dd = as.integer(d), pp = as.integer(p), xx = as.double(matrix(0,m+1,nlambda)), aa0 = as.double(a0), mmax_ite = as.integer(max.ite), tthol = as.double(thol), regfunc = as.character(regfunc), aalpha = as.double(0.5), z = as.double(z),df = as.integer(rep(0,nlambda)),func_norm = as.double(matrix(0,d,nlambda)), package="SAM")
+  out = .C("grpLR", A = as.double(Z), y = as.double(y), lambda = as.double(lambda), nlambda = as.integer(nlambda), LL0 = as.double(L0), nn = as.integer(n), dd = as.integer(d), pp = as.integer(p), xx = as.double(matrix(0,m+1,nlambda)), aa0 = as.double(a0), mmax_ite = as.integer(max.ite), tthol = as.double(thol), regfunc = as.character(regfunc), aalpha = as.double(0.5), z = as.double(z),df = as.integer(rep(0,nlambda)),func_norm = as.double(matrix(0,d,nlambda)), PACKAGE="SAM")
 
   fit$lambda = out$lambda
   fit$w = matrix(out$xx,ncol=nlambda)
   fit$df = out$df
   fit$func_norm = matrix(out$func_norm,ncol=nlambda)
-
-  rm(out,X,y,Z,X.min.rep,X.ran.rep)
 
   class(fit) = "samLL"
   return(fit)
@@ -210,31 +197,14 @@ plot.samLL = function(x,...){
 #' @seealso \code{\link{samLL}}
 #' @export
 predict.samLL = function(object, newdata, thol = 0.5 ,...){
-  gcinfo(FALSE)
-  out = list()
+  newdata = .sam_scale_newdata(object, newdata)
   nt = nrow(newdata)
-  d = ncol(newdata)
-  X.min.rep = matrix(rep(object$X.min,nt),nrow=nt,byrow=T)
-  X.ran.rep = matrix(rep(object$X.ran,nt),nrow=nt,byrow=T)
+  Zt = .sam_build_basis_newdata(object, newdata)
 
-  newdata = (newdata-X.min.rep)/X.ran.rep
-  newdata = pmax(newdata,0)
-  newdata = pmin(newdata,1)
-
-  m = object$p*d
-
-  Zt = matrix(0,nt,m)
-
-  for(j in 1:d){
-    tmp = (j-1)*object$p + c(1:object$p)
-    Zt[,tmp] = ns(newdata[,j],df=object$p,knots=object$knots[,j],Boundary.knots=object$Boundary.knots[,j])
-  }
-
-  out$probs = exp(cbind(Zt,rep(1,nt))%*%object$w)
-  out$probs = out$probs/(1+out$probs)
-  out$labels = sign(out$probs>thol)
-
-  rm(Zt,newdata)
+  out = list()
+  out$probs = exp(cbind(Zt, rep(1, nt)) %*% object$w)
+  out$probs = out$probs / (1 + out$probs)
+  out$labels = (out$probs > thol) * 1L
 
   return(out)
 }

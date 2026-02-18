@@ -20,7 +20,7 @@ namespace SAM {
       XX[i] = X[i].transpose() * X[i] / n;
     }
 
-    r = Y;
+    r = Y.array() - model_param.intercept;
     update_auxiliary();
 
     deviance = fabs(eval());
@@ -38,8 +38,9 @@ namespace SAM {
   }
 
   void LinearObjective::intercept_update() {
-    double sum_r = r.sum();
-    model_param.intercept = sum_r / n;
+    double delta = r.sum() / n;
+    model_param.intercept += delta;
+    r.array() -= delta;
   }
   void LinearObjective::update_auxiliary() {
     for (int idx = 0; idx < d; idx++)
@@ -80,4 +81,4 @@ namespace SAM {
   }
 
 
-}  // namespace picasso
+}  // namespace SAM

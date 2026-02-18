@@ -37,7 +37,7 @@ for(j in 1:d){
   Zt[,tmp] = tmp0
 }
 
-Zt <-cbind(rep(1, n), Zt)
+Zt <-cbind(rep(1, nt), Zt)
 colnames(Zt) <- c("Intercept", paste("X", 1:m, sep = ""))
 
 index <- NA
@@ -77,4 +77,3 @@ for (i in 1:t) {
 print("sam lin-reg with MCP:")
 print(total_t / t - genZ_t)
 print(total_l / t)
-

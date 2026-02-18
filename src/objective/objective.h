@@ -247,6 +247,6 @@ namespace SAM {
   };
 
 
-}  // namespace picasso
+}  // namespace SAM
 
 #endif  // SAM_OBJECTIVE_H
