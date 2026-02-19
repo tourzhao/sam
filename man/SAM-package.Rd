@@ -6,16 +6,20 @@
 \alias{SAM-package}
 \title{Sparse Additive Modelling}
 \description{
-The package SAM targets at high dimensional predictive modeling (regression and classification) for complex data analysis. SAM is short for sparse additive modeling, and adopts the computationally efficient basis spline technique. We solve the optimization problems by various computational algorithms including the block coordinate descent algorithm, fast iterative soft-thresholding algorithm, and newton method. The computation is further accelerated by warm-start and active-set tricks.
+SAM provides sparse additive models for high-dimensional prediction tasks
+(regression and classification). It uses spline basis expansion and efficient
+optimization routines to compute full regularization paths.
 }
 \details{
-\tabular{ll}{
-  Package: \tab SAM\cr
-  Type: \tab Package\cr
-  Version: \tab 1.0.5\cr
-  Date: \tab 2014-02-11\cr
-  License: \tab GPL-2 \cr
+The package exposes four model families:
+\itemize{
+\item \code{\link{samQL}}: quadratic-loss sparse additive regression.
+\item \code{\link{samLL}}: logistic-loss sparse additive classification.
+\item \code{\link{samHL}}: hinge-loss sparse additive classification.
+\item \code{\link{samEL}}: Poisson-loss sparse additive regression.
 }
+All models share a common spline representation and return regularization
+paths, allowing model selection after one fit.
 }
 \references{
 P. Ravikumar, J. Lafferty, H.Liu and L. Wasserman. "Sparse Additive Models", \emph{Journal of Royal Statistical Society: Series B}, 2009.\cr
@@ -26,5 +30,5 @@ T. Zhao and H.Liu. "Sparse Additive Machine", \emph{International Conference on 
 }
 \author{
 Tuo Zhao, Xingguo Li, Haoming Jiang, Han Liu, and Kathryn Roeder\cr
-Maintainers: Haoming Jiang<hjiang98@gatech.edu>;
+Maintainer: Tuo Zhao <tourzhao@gatech.edu>
 }

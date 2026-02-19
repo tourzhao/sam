@@ -9,13 +9,15 @@
 \arguments{
 \item{x}{An object with S3 class \code{"samHL"}}
 
-\item{\dots}{System reserved (No specific usage)}
+\item{\dots}{Additional arguments passed to methods; currently unused.}
 }
 \description{
-This function plots the regularization path (regularization parameter versus functional norm)
+Plot the regularization path (regularization parameter versus functional
+norm).
 }
 \details{
-The horizontal axis is for the regularization parameters in log scale. The vertical axis is for the functional norm of each component.
+The x-axis shows regularization parameters on a log scale. The y-axis shows
+the functional norm of each component function.
 }
 \seealso{
 \code{\link{samHL}}

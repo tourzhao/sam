@@ -3,42 +3,51 @@
 # Method: Sparse Additive Modelling using Quadratic Loss                #
 #-----------------------------------------------------------------------#
 
-#' Training function of Sparse Additive Models
+#' Training function of Sparse Additive Regression with Quadratic Loss
 #'
-#' The regression model is learned using training data.
+#' Fit a sparse additive regression model with quadratic loss.
 #'
-#' We adopt various computational algorithms including the block coordinate descent, fast iterative soft-thresholding algorithm, and newton method. The computation is further accelerated by "warm-start" and "active-set" tricks.
+#' The solver combines block coordinate descent, fast iterative
+#' soft-thresholding, and Newton updates. Computation is accelerated by warm
+#' starts and active-set screening.
 #'
-#' @param X The \code{n} by \code{d} design matrix of the training set, where \code{n} is sample size and \code{d} is dimension.
-#' @param y The \code{n}-dimensional response vector of the training set, where \code{n} is sample size.
+#' @param X Numeric training matrix with \code{n} rows (samples) and
+#'   \code{d} columns (features).
+#' @param y Numeric response vector of length \code{n}.
 #' @param p The number of basis spline functions. The default value is 3.
-#' @param lambda A user supplied lambda sequence. Typical usage is to have the program compute its own lambda sequence based on nlambda and lambda.min.ratio. Supplying a value of lambda overrides this. WARNING: use with care. Do not supply a single value for lambda. Supply instead a decreasing sequence of lambda values. samQL relies on its warms starts for speed, and its often faster to fit a whole path than compute a single fit.
+#' @param lambda Optional user-supplied regularization sequence. If provided,
+#'   use a decreasing sequence; warm starts are used along the path and are
+#'   usually much faster than fitting a single value.
 #' @param nlambda The number of lambda values. The default value is 30.
-#' @param lambda.min.ratio Smallest value for lambda, as a fraction of lambda.max, the (data derived) entry value (i.e. the smallest value for which all coefficients are zero). The default is 5e-3.
-#' @param thol Stopping precision. The default value is 1e-5.
-#' @param max.ite The number of maximum iterations. The default value is 1e5.
+#' @param lambda.min.ratio Smallest lambda as a fraction of \code{lambda.max}
+#'   (the smallest value that keeps all component functions at zero). The
+#'   default is \code{5e-3}.
+#' @param thol Stopping tolerance. The default value is \code{1e-5}.
+#' @param max.ite Maximum number of iterations. The default value is \code{1e5}.
 #' @param regfunc A string indicating the regularizer. The default value is "L1". You can also assign "MCP" or "SCAD" to it.
 #' @return
 #' \item{p}{
 #'   The number of basis spline functions used in training.
 #' }
 #' \item{X.min}{
-#'   A vector with each entry corresponding to the minimum of each input variable. (Used for rescaling in testing)
+#'   Per-feature minimums from training data (used to rescale test data).
 #' }
 #' \item{X.ran}{
-#'   A vector with each entry corresponding to the range of each input variable. (Used for rescaling in testing)
+#'   Per-feature ranges from training data (used to rescale test data).
 #' }
 #' \item{lambda}{
-#'   A sequence of regularization parameter used in training.
+#'   Sequence of regularization parameters used in training.
 #' }
 #' \item{w}{
-#'   The solution path matrix (\code{d*p} by length of \code{lambda}) with each column corresponding to a regularization parameter. Since we use the basis expansion, the length of each column is \code{d*p+1}.
+#'   Solution path matrix with size \code{d*p} by \code{length(lambda)}; each
+#'   column corresponds to one regularization parameter.
 #' }
 #' \item{intercept}{
 #'   The solution path of the intercept.
 #' }
 #' \item{df}{
-#'   The degree of freedom of the solution path (The number of non-zero component function)
+#'   Degrees of freedom along the solution path (number of non-zero component
+#'   functions).
 #' }
 #' \item{knots}{
 #'   The \code{p-1} by \code{d} matrix. Each column contains the knots applied to the corresponding variable.
@@ -47,7 +56,8 @@
 #'   The \code{2} by \code{d} matrix. Each column contains the boundary points applied to the corresponding variable.
 #' }
 #' \item{func_norm}{
-#'   The functional norm matrix (\code{d} by length of \code{lambda}) with each column corresponds to a regularization parameter. Since we have \code{d} input variables, the length of each column is \code{d}.
+#'   Functional norm matrix (\code{d} by \code{length(lambda)}); each column
+#'   corresponds to one regularization parameter.
 #' }
 #' \item{sse}{
 #'   Sums of square errors of the solution path.
@@ -136,12 +146,13 @@ samQL = function(X, y, p=3, lambda = NULL, nlambda = NULL, lambda.min.ratio = 5e
 
 #' Printing function for S3 class \code{"samQL"}
 #'
-#' Summarize the information of the object with S3 class \code{samQL}.
+#' Print a summary of an object of class \code{"samQL"}.
 #'
-#' The output includes length and d.f. of the regularization path.
+#' The output includes the regularization path length and its degrees of
+#' freedom.
 #'
 #' @param x An object with S3 class \code{"samQL"}
-#' @param \dots System reserved (No specific usage)
+#' @param \dots Additional arguments passed to methods; currently unused.
 #' @seealso \code{\link{samQL}}
 #' @export
 print.samQL = function(x,...){
@@ -151,12 +162,14 @@ print.samQL = function(x,...){
 
 #' Plot function for S3 class \code{"samQL"}
 #'
-#' This function plots the regularization path (regularization parameter versus functional norm)
+#' Plot the regularization path (regularization parameter versus functional
+#' norm).
 #'
-#' The horizontal axis is for the regularization parameters in log scale. The vertical axis is for the functional norm of each component.
+#' The x-axis shows regularization parameters on a log scale. The y-axis shows
+#' the functional norm of each component function.
 #'
 #' @param x An object with S3 class \code{"samQL"}
-#' @param \dots System reserved (No specific usage)
+#' @param \dots Additional arguments passed to methods; currently unused.
 #' @seealso \code{\link{samQL}}
 #' @export
 plot.samQL = function(x,...){
@@ -166,16 +179,18 @@ plot.samQL = function(x,...){
 
 #' Prediction function for S3 class \code{"samQL"}
 #'
-#' Predict the labels for testing data.
+#' Predict responses for test data.
 #'
-#' The testing dataset is rescale to the samQLe range, and expanded by the samQLe spline basis functions as the training data.
+#' The test matrix is rescaled using the training \code{X.min}/\code{X.ran},
+#' truncated to \code{[0, 1]}, and expanded with the same spline basis used
+#' during training.
 #'
 #' @param object An object with S3 class \code{"samQL"}.
-#' @param newdata The testing dataset represented in a \code{n} by \code{d} matrix, where \code{n} is testing sample size and \code{d} is dimension.
-#' @param \dots System reserved (No specific usage)
+#' @param newdata Numeric test matrix with \code{n} rows and \code{d} columns.
+#' @param \dots Additional arguments passed to methods; currently unused.
 #' @return
 #' \item{values}{
-#'   Predicted values also represented in a \code{n} by the length of \code{lambda} matrix, where \code{n} is testing sample size.
+#'   Predicted responses as an \code{n} by \code{length(lambda)} matrix.
 #' }
 #' @seealso \code{\link{samQL}}
 #' @export

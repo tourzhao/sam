@@ -9,24 +9,29 @@
 \arguments{
 \item{object}{An object with S3 class \code{"samLL"}.}
 
-\item{newdata}{The testing dataset represented in a \code{n} by \code{d} matrix, where \code{n} is testing sample size and \code{d} is dimension.}
+\item{newdata}{Numeric test matrix with \code{n} rows and \code{d} columns.}
 
-\item{thol}{The decision value threshold for prediction. The default value is 0.5}
+\item{thol}{Decision-value threshold used to convert probabilities to labels. The default value is \code{0.5}.}
 
-\item{\dots}{System reserved (No specific usage)}
+\item{\dots}{Additional arguments passed to methods; currently unused.}
 }
 \value{
 \item{probs}{
-  Estimated Posterior Probability for Prediction also represented in a \code{n} by the length of \code{lambda} matrix, where \code{n} is testing sample size.
+  Estimated posterior probabilities as an \code{n} by
+  \code{length(lambda)} matrix.
 }
 \item{labels}{
-  Predicted labels also represented in a \code{n} by the length of \code{lambda} matrix, where \code{n} is testing sample size. }
+  Predicted class labels (\code{0}/\code{1}) as an \code{n} by
+  \code{length(lambda)} matrix.
+}
 }
 \description{
-Predict the labels for testing data.
+Predict class probabilities and labels for test data.
 }
 \details{
-The testing dataset is rescale to the samLLe range, and expanded by the samLLe spline basis functions as the training data.
+The test matrix is rescaled using the training \code{X.min}/\code{X.ran},
+truncated to \code{[0, 1]}, and expanded with the same spline basis used
+during training.
 }
 \seealso{
 \code{\link{samLL}}

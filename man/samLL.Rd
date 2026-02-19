@@ -17,21 +17,27 @@ samLL(
 )
 }
 \arguments{
-\item{X}{The \code{n} by \code{d} design matrix of the training set, where \code{n} is sample size and \code{d} is dimension.}
+\item{X}{Numeric training matrix with \code{n} rows (samples) and \code{d}
+columns (features).}
 
-\item{y}{The \code{n}-dimensional label vector of the training set, where \code{n} is sample size. Labels must be coded in 1 and 0.}
+\item{y}{Binary training labels of length \code{n}. Labels must be coded as
+\code{0} and \code{1}.}
 
 \item{p}{The number of basis spline functions. The default value is 3.}
 
-\item{lambda}{A user supplied lambda sequence. Typical usage is to have the program compute its own lambda sequence based on nlambda and lambda.min.ratio. Supplying a value of lambda overrides this. WARNING: use with care. Do not supply a single value for lambda. Supply instead a decreasing sequence of lambda values. samLL relies on its warms starts for speed, and its often faster to fit a whole path than compute a single fit.}
+\item{lambda}{Optional user-supplied regularization sequence. If provided,
+use a decreasing sequence; warm starts are used along the path and are
+usually much faster than fitting a single value.}
 
 \item{nlambda}{The number of lambda values. The default value is 20.}
 
-\item{lambda.min.ratio}{Smallest value for lambda, as a fraction of lambda.max, the (data derived) entry value (i.e. the smallest value for which all coefficients are zero). The default is 0.1.}
+\item{lambda.min.ratio}{Smallest lambda as a fraction of \code{lambda.max}
+(the smallest value that keeps all component functions at zero). The
+default is \code{0.1}.}
 
-\item{thol}{Stopping precision. The default value is 1e-5.}
+\item{thol}{Stopping tolerance. The default value is \code{1e-5}.}
 
-\item{max.ite}{The number of maximum iterations. The default value is 1e5.}
+\item{max.ite}{Maximum number of iterations. The default value is \code{1e5}.}
 
 \item{regfunc}{A string indicating the regularizer. The default value is "L1". You can also assign "MCP" or "SCAD" to it.}
 }
@@ -40,19 +46,20 @@ samLL(
   The number of basis spline functions used in training.
 }
 \item{X.min}{
-  A vector with each entry corresponding to the minimum of each input variable. (Used for rescaling in testing)
+  Per-feature minimums from training data (used to rescale test data).
 }
 \item{X.ran}{
-  A vector with each entry corresponding to the range of each input variable. (Used for rescaling in testing)
+  Per-feature ranges from training data (used to rescale test data).
 }
 \item{lambda}{
-  A sequence of regularization parameter used in training.
+  Sequence of regularization parameters used in training.
 }
 \item{w}{
-  The solution path matrix (\code{d*p+1} by length of \code{lambda}) with each column corresponding to a regularization parameter. Since we use the basis expansion with the intercept, the length of each column is \code{d*p+1}.
+  Solution path matrix with size \code{d*p+1} by \code{length(lambda)}; each column corresponds to one regularization parameter.
 }
 \item{df}{
-  The degree of freedom of the solution path (The number of non-zero component function)
+  Degrees of freedom along the solution path (number of non-zero component
+  functions).
 }
 \item{knots}{
   The \code{p-1} by \code{d} matrix. Each column contains the knots applied to the corresponding variable.
@@ -61,14 +68,17 @@ samLL(
   The \code{2} by \code{d} matrix. Each column contains the boundary points applied to the corresponding variable.
 }
 \item{func_norm}{
-  The functional norm matrix (\code{d} by length of \code{lambda}) with each column corresponds to a regularization parameter. Since we have \code{d} input variables, the length of each column is \code{d}.
+  Functional norm matrix (\code{d} by \code{length(lambda)}); each column
+  corresponds to one regularization parameter.
 }
 }
 \description{
-The logistic model is learned using training data.
+Fit a sparse additive logistic regression model on training data.
 }
 \details{
-We adopt various computational algorithms including the block coordinate descent, fast iterative soft-thresholding algorithm, and newton method. The computation is further accelerated by "warm-start" and "active-set" tricks.
+The solver combines block coordinate descent, fast iterative soft-thresholding,
+and Newton updates. Computation is accelerated by warm starts and active-set
+screening.
 }
 \examples{
 

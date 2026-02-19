@@ -9,13 +9,14 @@
 \arguments{
 \item{x}{An object with S3 class \code{"samEL"}}
 
-\item{\dots}{System reserved (No specific usage)}
+\item{\dots}{Additional arguments passed to methods; currently unused.}
 }
 \description{
-Summarize the information of the object with S3 class \code{samEL}.
+Print a summary of an object of class \code{"samEL"}.
 }
 \details{
-The output includes length and d.f. of the regularization path.
+The output includes the regularization path length and its degrees of
+freedom.
 }
 \seealso{
 \code{\link{samEL}}

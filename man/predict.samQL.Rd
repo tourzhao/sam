@@ -9,20 +9,22 @@
 \arguments{
 \item{object}{An object with S3 class \code{"samQL"}.}
 
-\item{newdata}{The testing dataset represented in a \code{n} by \code{d} matrix, where \code{n} is testing sample size and \code{d} is dimension.}
+\item{newdata}{Numeric test matrix with \code{n} rows and \code{d} columns.}
 
-\item{\dots}{System reserved (No specific usage)}
+\item{\dots}{Additional arguments passed to methods; currently unused.}
 }
 \value{
 \item{values}{
-  Predicted values also represented in a \code{n} by the length of \code{lambda} matrix, where \code{n} is testing sample size.
+  Predicted responses as an \code{n} by \code{length(lambda)} matrix.
 }
 }
 \description{
-Predict the labels for testing data.
+Predict responses for test data.
 }
 \details{
-The testing dataset is rescale to the samQLe range, and expanded by the samQLe spline basis functions as the training data.
+The test matrix is rescaled using the training \code{X.min}/\code{X.ran},
+truncated to \code{[0, 1]}, and expanded with the same spline basis used
+during training.
 }
 \seealso{
 \code{\link{samQL}}
