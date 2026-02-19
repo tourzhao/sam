@@ -34,9 +34,6 @@ Description: Computationally efficient tools for high dimensional predictive
         The computation is further accelerated by warm-start and active-set tricks.
 License: GPL-2
 Encoding: UTF-8
-Repository: CRAN
 NeedsCompilation: yes
 RoxygenNote: 7.3.3
 LinkingTo: Rcpp, RcppEigen
-Packaged: 2021-06-30 17:15:07 UTC; jhaoming
-Date/Publication: 2021-07-01 07:10:27 UTC
